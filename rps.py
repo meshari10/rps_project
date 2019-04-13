@@ -39,23 +39,21 @@ class ReflectPlayer(Player):
 class CyclePlayer(Player):
     def __init__(self):
         Player.__init__(self)
-        self.cycle = 0
+        self.last = None
 
     def move(self):
-        if self.cycle == 'rock':
-            move = moves[0]
-            self.cycle = self.cycle + 1
-        elif self.cycle == 'paper':
-            move = moves[1]
-            self.cycle = self.cycle + 1
+        if self.last is None:
+            move = Player.move(self)
         else:
-            move = moves[2]
-            self.cycle = self.cycle + 1
+            index = moves.index(self.last) + 1
+            if index >= len(moves):
+                index = 0  # Resets index so it starts cycling again from rock
+            move = moves[index]
+        self.last = move
         return move
 
 
-# asks the user what move(input) to make
-class HumanPlayer(Player):
+class HumanPlayer(Player):  # asks the user what move(input) to make
     def move(self):
         index = input('Choose: Rock, Paper, Scissors?  ').lower()
         while index not in moves:
@@ -65,60 +63,60 @@ class HumanPlayer(Player):
 
 
 class Game:
-    def __init__(self, p2):
-        self.FirstPlayer = HumanPlayer()
-        self.SecondPlayer = RandomPlayer()
+    def __init__(self, mode):
+        self.PlayerOne = HumanPlayer()
+        self.PlayerTwo = mode
 
     def play_game(self):
+        rounds = 5  # Plays 5 rounds
         print("\nLet's play Rock, Paper, Scissors!")
-        for round in range(5):
+        for round in range(rounds):
             print(f"\nRound {round}:")
             self.play_round()
-        if self.FirstPlayer.score > self.SecondPlayer.score:
+        if self.PlayerOne.score > self.PlayerTwo.score:
             print('Player 1 is the WINNER!')
-        elif self.FirstPlayer.score < self.SecondPlayer.score:
+        elif self.PlayerOne.score < self.PlayerTwo.score:
             print('Player 2 is the WINNER!')
         else:
             print('No one won, it\'s a tie!')
-        print(f"Final score is {self.FirstPlayer.score} to {self.SecondPlayer.score}")
+        print(f"Final score: {self.PlayerOne.score} to {self.PlayerTwo.score}")
 
-    # Plays a single round if user chose to
-    def play_single(self):
+    def play_single(self):  # Plays a single round if user chose to
         print("\nRock Paper Scissors!")
         for round in range(1, 2):
             print(f"Round {round} of {round}:")
             self.play_round()
-        if self.FirstPlayer.score > self.SecondPlayer.score:
+        if self.PlayerOne.score > self.PlayerTwo.score:
             print('You won!')
-        elif self.FirstPlayer.score < self.SecondPlayer.score:
+        elif self.PlayerOne.score < self.PlayerTwo.score:
             print('Computer won!')
         else:
             print('It\'s a tie!')
-        print(f"Final score is {self.FirstPlayer.score} to {self.SecondPlayer.score}")
+        print(f"Final score: {self.PlayerOne.score} to {self.PlayerTwo.score}")
 
     def play_round(self):
-        move1 = self.FirstPlayer.move()
-        move2 = self.SecondPlayer.move()
+        move1 = self.PlayerOne.move()
+        move2 = self.PlayerTwo.move()
         Game.play(move1, move2)
-        self.FirstPlayer.learn(move2)  # stores opponent move
-        self.SecondPlayer.learn(move1)  # stores opponent move
+        self.PlayerOne.learn(move2)  # stores opponent move
+        self.PlayerTwo.learn(move1)  # stores opponent move
 
     def play(self, move1, move2):
         print(f"You played {move1} and opponent played {move2}")
 
         if beats(move1, move2):
             print("--- PLAYER ONE WINS ---")
-            self.FirstPlayer.score += 1
-            print(f"[The score is {self.FirstPlayer.score} to {self.SecondPlayer.score}]\n")
+            self.PlayerOne.score += 1
+            print(f"Score: {self.PlayerOne.score} to {self.PlayerTwo.score}\n")
             return 1
         elif beats(move2, move1):
             print("--- PLAYER TWO WINS ---")
-            self.SecondPlayer.score += 1
-            print(f"[The score is {self.FirstPlayer.score} to {self.SecondPlayer.score}]\n")
+            self.PlayerTwo.score += 1
+            print(f"Score: {self.PlayerOne.score} to {self.PlayerTwo.score}\n")
             return 2
         else:
             print("[ It's A TIE ]")
-            print(f"[The score is {self.FirstPlayer.score} to {self.SecondPlayer.score}]\n")
+            print(f"Score: {self.PlayerOne.score} to {self.PlayerTwo.score}\n")
             return 0
 
 
@@ -133,19 +131,24 @@ def beats(one, two):
 
 
 if __name__ == '__main__':
-    choice = [Player(), RandomPlayer()]
+    choice = [Player(), RandomPlayer(), CyclePlayer(), ReflectPlayer()]
     mode = input('Select the Rock, Paper, Scissors game mode: \n' +
-                 '[1] Rocks, [2] Random: ')
+                 '[1] Rocks, [2] Random [3] Reflect [4] Cycle: ')
 
     # when a choice is not made, random mode will be selected
-    while mode != 1 or mode != 2:
-        mode = random.choice(choice)
-        break
     if mode == '1':
         mode = Player()
     elif mode == '2':
         mode = RandomPlayer()
-
+    elif mode == '3':
+        mode = ReflectPlayer()
+    elif mode == '4':
+        mode = CyclePlayer()
+    else:
+        mode = random.choice(choice)
+        """
+        when a choice is not made, random mode will be selected
+        """
     rounds = input('\nChoose:\n\n[1] Single game or\n'
                    '[2] Full game (5 rounds): ')
     Game = Game(mode)
