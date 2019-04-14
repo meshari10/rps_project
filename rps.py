@@ -136,6 +136,11 @@ if __name__ == '__main__':
                  '[1] Rocks, [2] Random [3] Reflect [4] Cycle: ')
 
     # when a choice is not made, random mode will be selected
+    GameList = [1, 2, 3, 4]
+    # when a choice is not made, random mode will be selected
+    while mode not in GameList:
+        mode = random.choice(choice)
+        break
     if mode == '1':
         mode = Player()
     elif mode == '2':
@@ -144,8 +149,7 @@ if __name__ == '__main__':
         mode = ReflectPlayer()
     elif mode == '4':
         mode = CyclePlayer()
-    else:
-        mode = random.choice(choice)
+
         """
         when a choice is not made, random mode will be selected
         """
